@@ -1,56 +1,88 @@
-# Welcome to your Expo app 👋
+# Adaptive Learning Path Agent 🚀
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A personalized, intelligent AI-driven learning platform tailored for data science and AI engineering learners. Built with **React Native / Expo** on the frontend, and a modular **FastAPI + SQLAlchemy** backend designed to integrate with future LangGraph agents, ChromaDB vector stores, and LLM reasoning.
 
-## Get started
+---
 
-1. Install dependencies
+## 🎯 Architecture Overview
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+AdaptiveLearningAgent/
+├── mobile/                  # React Native / Expo Frontend (TypeScript)
+│   ├── src/
+│   │   ├── app/             # Expo Router file-based screens
+│   │   │   ├── (tabs)/      # Home dashboard, Learning Path, Progress, Profile
+│   │   │   ├── onboarding/  # Goal selection & initial assessment flow
+│   │   │   └── learning/    # Topic Hub: Concepts, AI Videos, Practice, Quizzes
+│   │   ├── components/      # UI components & Design system cards
+│   │   ├── services/        # API client with graceful offline fallback
+│   │   ├── context/         # Assessment & adaptive state management
+│   │   └── types/           # Strongly typed data models
+│   └── package.json
+└── backend/                 # FastAPI Backend Service (Python 3.12)
+    ├── app/
+    │   ├── api/v1/          # Endpoints: learners, topics, adaptive, health
+    │   ├── core/            # Configuration & Pydantic Settings
+    │   ├── db/              # SQLAlchemy session, engine & seed data
+    │   ├── models/          # ORM models (Users, Profiles, Topics, Quizzes)
+    │   ├── schemas/         # Pydantic v2 schemas
+    │   └── services/        # Deterministic adaptive engine & agent interfaces
+    ├── tests/               # Pytest suite with in-memory SQLite isolation
+    └── requirements.txt
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## 🚀 Quick Start Guide
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 1. Start the FastAPI Backend
 
-## Learn more
+```bash
+cd backend
+python -m venv .venv
 
-To learn more about developing your project with Expo, look at the following resources:
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# macOS/Linux:
+source .venv/bin/activate
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-## Join the community
+- API Docs (Swagger): [http://localhost:8000/docs](http://localhost:8000/docs)
+- Health Check: [http://localhost:8000/health](http://localhost:8000/health)
 
-Join our community of developers creating universal apps.
+### 2. Run Backend Tests
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+cd backend
+pytest -v
+```
+
+### 3. Start the React Native Mobile App
+
+```bash
+cd mobile
+npm install
+npx expo start
+```
+
+Press `w` to open web, or scan QR code with Expo Go on Android / iOS.
+
+---
+
+## 🛡️ Graceful Offline & Fallback Design
+
+The mobile application is completely resilient to network outages:
+- When the backend is online, the mobile app coordinates progress and recommendations with FastAPI.
+- When the backend is offline or unreachable, the mobile app automatically falls back to local data and client-side adaptive logic without crashing or freezing.
+
+---
+
+## 🧠 Adaptive Logic Engine
+
+Scores trigger adaptive actions:
+- **Score ≥ 80% (Mastered)**: Unlocks the next module in the sequence.
+- **Score 60% – 79% (Practice)**: Recommends targeted practice and quiz retake.
+- **Score < 60% (Review)**: Recommends remediation with AI concept video, YouTube lectures, and practice drills.

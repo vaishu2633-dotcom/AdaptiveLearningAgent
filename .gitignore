@@ -44,3 +44,20 @@ example
 # generated native folders
 /ios
 /android
+
+# Python & Backend
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite
+*.sqlite3
+*.db
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+!.env.example

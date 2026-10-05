@@ -133,6 +133,48 @@ export default function RootLayout() {
               headerBackTitle: 'Back',
             }}
           />
+          <Stack.Screen
+            name="learning/topic/[topicId]/index"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="learning/topic/[topicId]/concept"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="learning/topic/[topicId]/ai-explanation"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="learning/topic/[topicId]/video"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="learning/topic/[topicId]/practice"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="learning/topic/[topicId]/quiz"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="learning/topic/[topicId]/result"
+            options={{
+              headerShown: false,
+            }}
+          />
         </Stack>
       </AssessmentProvider>
     </ThemeProvider>

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -18,11 +18,26 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 
 import { useAssessment } from '@/context/assessment-context';
+import { checkBackendHealth } from '@/services/api';
 
 export default function HomeScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { goalTitle, goalIcon, currentTopic, roadmap, completedTopicIds, result } = useAssessment();
+
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    checkBackendHealth().then((res) => {
+      if (isMounted) {
+        setBackendOnline(res.online);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const totalTopics = roadmap.length || 12;
   const completedCount = completedTopicIds.length;
@@ -34,6 +49,60 @@ export default function HomeScreen() {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}>
       <View style={styles.content}>
+        {/* Backend Connectivity Status Pill */}
+        <Pressable
+          onPress={() => {
+            checkBackendHealth().then((res) => setBackendOnline(res.online));
+          }}
+          style={[
+            styles.backendStatusPill,
+            {
+              backgroundColor:
+                backendOnline === true
+                  ? 'rgba(30, 142, 62, 0.12)'
+                  : backendOnline === false
+                  ? 'rgba(234, 134, 0, 0.12)'
+                  : 'rgba(100, 100, 100, 0.08)',
+              borderColor:
+                backendOnline === true
+                  ? 'rgba(30, 142, 62, 0.3)'
+                  : backendOnline === false
+                  ? 'rgba(234, 134, 0, 0.3)'
+                  : 'transparent',
+            },
+          ]}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Backend connectivity status">
+          <View
+            style={[
+              styles.statusDot,
+              {
+                backgroundColor:
+                  backendOnline === true ? '#1E8E3E' : backendOnline === false ? '#E37400' : '#888',
+              },
+            ]}
+          />
+          <Text
+            style={[
+              styles.backendStatusText,
+              {
+                color:
+                  backendOnline === true
+                    ? '#137333'
+                    : backendOnline === false
+                    ? '#B06000'
+                    : theme.textSecondary,
+              },
+            ]}>
+            {backendOnline === true
+              ? 'FastAPI Connected'
+              : backendOnline === false
+              ? 'Local Fallback Mode'
+              : 'Checking API...'}
+          </Text>
+        </Pressable>
+
         {/* Top Greeting & Streak */}
         <View style={styles.greetingRow}>
           <View>
@@ -634,4 +703,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  backendStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
+    marginBottom: Spacing.two,
+    gap: 6,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  backendStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
+

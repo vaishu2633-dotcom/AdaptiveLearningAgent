@@ -76,27 +76,29 @@ export default function TopicDetailScreen() {
   const handleResourcePress = (res: LearningResource) => {
     if (res.type === 'AI_VIDEO') {
       router.push({
-        pathname: '/learning/video/[id]',
-        params: { id: topicId },
+        pathname: '/learning/topic/[topicId]/ai-explanation',
+        params: { topicId },
       });
     } else if (res.type === 'ARTICLE') {
       router.push({
-        pathname: '/learning-session/[id]',
-        params: { id: topicId },
+        pathname: '/learning/topic/[topicId]/concept',
+        params: { topicId },
       });
     } else if (res.type === 'PRACTICE') {
       router.push({
-        pathname: '/practice/[id]',
-        params: { id: topicId },
+        pathname: '/learning/topic/[topicId]/practice',
+        params: { topicId },
       });
     } else if (res.type === 'QUIZ') {
       router.push({
-        pathname: '/quiz',
+        pathname: '/learning/topic/[topicId]/quiz',
         params: { topicId },
       });
     } else if (res.type === 'YOUTUBE') {
-      setSelectedYtResource(res);
-      setYouTubeModalVisible(true);
+      router.push({
+        pathname: '/learning/topic/[topicId]/video',
+        params: { topicId },
+      });
     }
   };
 

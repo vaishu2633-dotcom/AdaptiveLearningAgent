@@ -12,6 +12,7 @@ import {
   SkillScore,
   TopicItem,
 } from '@/types/assessment';
+import { TopicProgress } from '@/types/learning';
 
 export interface AdaptiveNotification {
   title: string;
@@ -52,6 +53,12 @@ interface AssessmentContextValue {
   watchedResources: Record<string, boolean>;
   markResourceWatched: (resourceId: string) => void;
   recordQuizResult: (topicId: string, score: number) => void;
+
+  // Adaptive Progress Management
+  topicProgressMap: Record<string, TopicProgress>;
+  getTopicProgress: (topicId: string) => TopicProgress;
+  updateTopicProgress: (topicId: string, partial: Partial<TopicProgress>) => void;
+  recordTopicQuizScore: (topicId: string, score: number) => void;
 }
 
 const AssessmentContext = createContext<AssessmentContextValue | null>(null);
@@ -215,6 +222,94 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
+  // Central Topic Progress State
+  const [topicProgressMap, setTopicProgressMap] = useState<Record<string, TopicProgress>>({
+    'ds-probability': {
+      topicId: 'ds-probability',
+      progress: 45,
+      bestScore: 0,
+      attempts: 0,
+      status: 'in-progress',
+      recommendedAction: 'Take the Probability Quiz',
+    },
+    'ds-5': {
+      topicId: 'ds-5',
+      progress: 45,
+      bestScore: 0,
+      attempts: 0,
+      status: 'in-progress',
+      recommendedAction: 'Take the Probability Quiz',
+    },
+  });
+
+  const getTopicProgress = (topicId: string): TopicProgress => {
+    if (topicProgressMap[topicId]) {
+      return topicProgressMap[topicId];
+    }
+    const item = roadmap.find((t) => t.id === topicId);
+    return {
+      topicId,
+      progress: item?.progressPercent || 0,
+      bestScore: topicScores[topicId] || 0,
+      attempts: topicScores[topicId] !== undefined ? 1 : 0,
+      status:
+        item?.status === 'completed'
+          ? 'mastered'
+          : item?.status === 'needs_review'
+          ? 'needs-review'
+          : item?.status === 'current'
+          ? 'in-progress'
+          : item?.status === 'upcoming'
+          ? 'available'
+          : 'locked',
+    };
+  };
+
+  const updateTopicProgress = (topicId: string, partial: Partial<TopicProgress>) => {
+    setTopicProgressMap((prev) => {
+      const current = prev[topicId] || getTopicProgress(topicId);
+      return {
+        ...prev,
+        [topicId]: {
+          ...current,
+          ...partial,
+          updatedAt: Date.now(),
+        },
+      };
+    });
+  };
+
+  const recordTopicQuizScore = (topicId: string, score: number) => {
+    const prevProg = getTopicProgress(topicId);
+    const newBest = Math.max(prevProg.bestScore || 0, score);
+    const attempts = (prevProg.attempts || 0) + 1;
+
+    let newStatus: TopicProgress['status'] = 'in-progress';
+    let recAction = '';
+
+    if (score >= 80) {
+      newStatus = 'mastered';
+      recAction = 'Continue to Next Topic';
+    } else if (score >= 60) {
+      newStatus = 'in-progress';
+      recAction = 'Practice Problems & Retake Quiz';
+    } else {
+      newStatus = 'needs-review';
+      recAction = 'Review AI Explanation & Watch Video';
+    }
+
+    updateTopicProgress(topicId, {
+      progress: score >= 80 ? 100 : score >= 60 ? 75 : 40,
+      bestScore: newBest,
+      lastQuizScore: score,
+      attempts,
+      status: newStatus,
+      recommendedAction: recAction,
+    });
+
+    recordQuizResult(topicId, score);
+  };
+
   // Active question bank according to selected goal
   const questions: AssessmentQuestion[] = useMemo(() => {
     return QUESTION_BANKS[selectedGoal] || QUESTION_BANKS['other'] || [];
@@ -362,6 +457,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
         watchedResources,
         markResourceWatched,
         recordQuizResult,
+        topicProgressMap,
+        getTopicProgress,
+        updateTopicProgress,
+        recordTopicQuizScore,
       }}>
       {children}
     </AssessmentContext.Provider>
